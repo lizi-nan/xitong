@@ -1,0 +1,55 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.1 Chrome/142.0.7444.265 Electron/39.8.0 Safari/537.36" version="29.6.1">
+  <diagram id="paper-arch-001" name="论文级系统架构图">
+    <mxGraphModel dx="1678" dy="989" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="pCJrV-X83pzooXBD8y12-1" edge="1" parent="1" source="user_layer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="app_layer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="user_layer" parent="1" style="swimlane;fontStyle=1;horizontal=1;startSize=42;rounded=1;container=1;collapsible=0;whiteSpace=wrap;html=1;strokeWidth=2;" value="用户层" vertex="1">
+          <mxGeometry height="140" width="920" x="110" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="browser" parent="user_layer" style="rounded=1;whiteSpace=wrap;html=1;fontSize=18;strokeWidth=2;" value="浏览器访问" vertex="1">
+          <mxGeometry height="55" width="280" x="320" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="pCJrV-X83pzooXBD8y12-2" edge="1" parent="1" source="app_layer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="data_layer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="app_layer" parent="1" style="swimlane;fontStyle=1;horizontal=1;startSize=42;rounded=1;container=1;collapsible=0;whiteSpace=wrap;html=1;strokeWidth=2;" value="应用层" vertex="1">
+          <mxGeometry height="290" width="920" x="110" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="flask_core" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fontSize=20;strokeWidth=2;" value="Flask Web服务" vertex="1">
+          <mxGeometry height="55" width="420" x="360" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="user_mgmt" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;strokeWidth=2;" value="用户管理&#xa;登录 / 注册 / 鉴权" vertex="1">
+          <mxGeometry height="90" width="180" x="170" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="graph_query" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;strokeWidth=2;" value="知识图谱查询&#xa;/api/graph" vertex="1">
+          <mxGeometry height="90" width="180" x="380" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="qa_service" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;strokeWidth=2;" value="知识问答&#xa;/api/qa" vertex="1">
+          <mxGeometry height="90" width="180" x="590" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="wordcloud" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;strokeWidth=2;" value="词云分析&#xa;/api/wordcloud" vertex="1">
+          <mxGeometry height="90" width="180" x="800" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="data_layer" parent="1" style="swimlane;fontStyle=1;horizontal=1;startSize=42;rounded=1;container=1;collapsible=0;whiteSpace=wrap;html=1;strokeWidth=2;" value="数据层" vertex="1">
+          <mxGeometry height="180" width="920" x="110" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="kg_data" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fontSize=15;strokeWidth=2;" value="知识图谱数据" vertex="1">
+          <mxGeometry height="70" width="180" x="145" y="635" as="geometry" />
+        </mxCell>
+        <mxCell id="user_data" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fontSize=15;strokeWidth=2;" value="用户数据" vertex="1">
+          <mxGeometry height="70" width="180" x="355" y="635" as="geometry" />
+        </mxCell>
+        <mxCell id="concept_data" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fontSize=15;strokeWidth=2;" value="概念关系数据" vertex="1">
+          <mxGeometry height="70" width="220" x="565" y="635" as="geometry" />
+        </mxCell>
+        <mxCell id="image_data" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fontSize=15;strokeWidth=2;" value="图像数据" vertex="1">
+          <mxGeometry height="70" width="180" x="815" y="635" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

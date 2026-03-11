@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}藏医多模态知识图谱{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <nav class="nav">
+    <a href="{{ url_for('graph_page') }}">知识图谱</a>
+    <a href="{{ url_for('qa_page') }}">问答</a>
+    <a href="{{ url_for('wordcloud_page') }}">词云</a>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('users_page') }}">用户管理</a>
+    <a href="{{ url_for('logout') }}">退出</a>
+    {% else %}
+    <a href="{{ url_for('login') }}">登录</a>
+    <a href="{{ url_for('register') }}">注册</a>
+    {% endif %}
+  </nav>
+  <main class="main">
+    {% block content %}{% endblock %}
+  </main>
+  <script src="{{ url_for('static', filename='common.js') }}"></script>
+  {% block script %}{% endblock %}
+</body>
+</html>

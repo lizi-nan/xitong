@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}知识图谱 - 藏医多模态知识图谱{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+{% endblock %}
+{% block content %}
+<h1 class="page-title">知识图谱展示</h1>
+<p class="graph-legend" style="margin-bottom:0.5rem;">仅展示有配图的概念与图像节点。</p>
+<div id="graph-container"></div>
+<p class="graph-legend">
+  <span class="concept_ch">■ 汉语概念</span>
+  <span class="concept_tib">■ 藏语概念</span>
+  <span class="image">■ 图像</span>
+  — 描述（概念-图像）； — 翻译（汉-藏）； — 其他关系
+</p>
+{% endblock %}
+{% block script %}
+<script>
+(function() {
+  var container = document.getElementById('graph-container');
+  var chart = echarts.init(container);
+
+  var baseUrl = window.location.origin;
+
+  function loadGraph() {
+    fetch('{{ url_for("api_graph") }}')
+      .then(function(r) {
+        if (r.status === 401) { window.location.href = '{{ url_for("login") }}'; return; }
+        return r.json();
+      })
+      .then(function(data) {
+        if (!data || !data.nodes) return;
+        var nodes = data.nodes || [];
+        var edges = data.edges || [];
+        // 只展示有图片的部分：仅保留图像节点 + 与图像有「描述」关系的概念，及其之间的边
+        var nodeIds = new Set();
+        var imageNodes = nodes.filter(function(n) { return n.imageUrl; });
+        var imageIds = new Set(imageNodes.map(function(n) { return n.id; }));
+        imageNodes.forEach(function(n) { nodeIds.add(n.id); });
+        edges.forEach(function(e) {
+          if (e.relation === '描述' && (imageIds.has(e.source) || imageIds.has(e.target))) {
+            nodeIds.add(e.source);
+            nodeIds.add(e.target);
+          }
+        });
+        nodes = nodes.filter(function(n) { return nodeIds.has(n.id); });
+        edges = edges.filter(function(e) {
+          return nodeIds.has(e.source) && nodeIds.has(e.target);
+        });
+
+        var categories = [
+          { name: '汉语概念', itemStyle: { color: '#7ee787' } },
+          { name: '藏语概念', itemStyle: { color: '#a5d6ff' } },
+          { name: '图像', itemStyle: { color: '#d2a8ff' } }
+        ];
+        var categoryMap = { 'concept_ch': 0, 'concept_tib': 1, 'image': 2 };
+        var chartNodes = nodes.map(function(n) {
+          var cat = categoryMap[n.type] !== undefined ? categoryMap[n.type] : 0;
+          var opt = {
+            id: n.id,
+            name: n.label && n.label.length > 30 ? n.label.slice(0, 28) + '…' : (n.label || n.id),
+            category: cat,
+            symbolSize: n.type === 'image' ? 56 : 28,
+            label: { show: true, fontSize: 11 }
+          };
+          if (n.imageUrl) {
+            var imgSrc = n.imageUrl.indexOf('/') === 0 ? baseUrl + n.imageUrl : baseUrl + '/' + n.imageUrl;
+            opt.symbol = 'image://' + imgSrc;
+            opt.symbolSize = [56, 56];
+            opt.label = { show: true, position: 'bottom', formatter: '【图】', fontSize: 10 };
+          }
+          return opt;
+        });
+        var chartEdges = edges.map(function(e) {
+          return { source: e.source, target: e.target, value: e.relation };
+        });
+
+        chart.setOption({
+          tooltip: {
+            formatter: function(params) {
+              if (params.dataType === 'edge') {
+                return params.data.value || '关系';
+              }
+              var url = params.data.symbol && params.data.symbol.indexOf('image://') === 0
+                ? params.data.symbol.replace('image://', '') : null;
+              var html = (params.data.name || params.name) + (params.data.id ? '<br/>ID: ' + params.data.id : '');
+              if (url) {
+                html += '<br/><img src="' + url + '" style="max-width:200px;max-height:150px;margin-top:6px;border-radius:4px;" />';
+              }
+              return html;
+            }
+          },
+          legend: { data: categories.map(function(c) { return c.name; }), bottom: 0, textStyle: { color: '#8b949e' } },
+          series: [{
+            type: 'graph',
+            layout: 'force',
+            data: chartNodes,
+            links: chartEdges,
+            categories: categories,
+            roam: true,
+            label: { position: 'right', show: true },
+            force: {
+              repulsion: 200,
+              edgeLength: 120,
+              gravity: 0.1
+            },
+            lineStyle: { color: 'source', curveness: 0.2 },
+            edgeLabel: { show: true, formatter: function(x) { return x.data.value; }, fontSize: 9 }
+          }]
+        });
+      })
+      .catch(function(err) {
+        container.innerHTML = '<p style="color:#f85149">加载图谱失败：' + (err.message || '') + '</p>';
+      });
+  }
+
+  window.addEventListener('resize', function() { chart.resize(); });
+  loadGraph();
+})();
+</script>
+{% endblock %}

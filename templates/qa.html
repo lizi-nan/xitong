@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}问答 - 藏医多模态知识图谱{% endblock %}
+{% block content %}
+<h1 class="page-title">知识图谱问答</h1>
+<p class="qa-hint" style="color:#8b949e; font-size:0.9rem; margin-bottom:0.5rem;">以下推荐问题均有配图，可直接点击提问。</p>
+<div class="qa-suggest">
+  <span>推荐问题：</span>
+  <a href="javascript:;" data-q="培根病丸剂枝是什么">培根病丸剂枝是什么</a>
+  <a href="javascript:;" data-q="隆病问诊枝有什么内容">隆病问诊枝有什么内容</a>
+  <a href="javascript:;" data-q="维命隆叶">维命隆叶</a>
+  <a href="javascript:;" data-q="赤巴病泻下枝">赤巴病泻下枝</a>
+</div>
+<div class="qa-box">
+  <input type="text" id="qa-input" placeholder="例如：培根病丸剂枝、隆病问诊枝、维命隆叶（均有配图）" />
+  <button type="button" id="qa-btn">提问</button>
+</div>
+<div class="qa-results" id="qa-results">
+  <p style="color:#8b949e">点击上方推荐问题或输入概念/问题后提问，将返回相关知识及配图。</p>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+(function() {
+  var input = document.getElementById('qa-input');
+  var btn = document.getElementById('qa-btn');
+  var results = document.getElementById('qa-results');
+
+  function doSearch() {
+    var q = (input.value || '').trim();
+    if (!q) return;
+    results.innerHTML = '<p style="color:#8b949e">查询中…</p>';
+    fetch('/api/qa?q=' + encodeURIComponent(q))
+      .then(function(r) {
+        if (r.status === 401) { window.location.href = '{{ url_for("login") }}'; return {}; }
+        return r.json();
+      })
+      .then(function(data) {
+        if (data.error) {
+          results.innerHTML = '<p style="color:#f85149">' + escapeHtml(data.error) + '</p>';
+          return;
+        }
+        var answer = data.answer || '';
+        var relations = data.relations || [];
+        var images = data.images || [];
+        var html = '';
+        if (answer) {
+          html += '<div class="qa-answer"><h3>回答</h3><pre class="qa-answer-text">' + escapeHtml(answer) + '</pre></div>';
+        }
+        if (images.length > 0) {
+          var origin = window.location.origin || '';
+          html += '<div class="qa-images"><h3>相关图像</h3><div class="qa-images-list">';
+          images.slice(0, 12).forEach(function(img) {
+            var url = (img.imageUrl || '').trim();
+            if (url && url.indexOf('http') !== 0 && url.indexOf('//') !== 0) {
+              url = (url.indexOf('/') === 0 ? url : '/' + url);
+              url = origin + url;
+            }
+            var placeholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="160" height="120"%3E%3Crect fill="%2321262d" width="160" height="120"/%3E%3Ctext x="80" y="65" text-anchor="middle" fill="%238b949e" font-size="14"%3E暂无图片%3C/text%3E%3C/svg%3E';
+            html += '<figure><img src="' + (url ? escapeHtml(url) : placeholder) + '" alt="" onerror="this.onerror=null;this.src=\'' + placeholder.replace(/'/g, "\\'") + '\';" /><figcaption>' + escapeHtml(img.label || '') + '</figcaption></figure>';
+          });
+          html += '</div></div>';
+        }
+        if (relations.length > 0) {
+          var origin = window.location.origin || '';
+          var ph = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="60"%3E%3Crect fill="%2321262d" width="80" height="60"/%3E%3Ctext x="40" y="35" text-anchor="middle" fill="%238b949e" font-size="10"%3E无图%3C/text%3E%3C/svg%3E';
+          html += '<div class="qa-relations"><h3>相关知识关系</h3>';
+          relations.forEach(function(r) {
+            html += '<div class="qa-item">';
+            html += '<span><strong>' + escapeHtml(r.source_label) + '</strong></span>';
+            html += '<span class="rel">' + escapeHtml(r.relation) + '</span>';
+            html += '<span><strong>' + escapeHtml(r.target_label) + '</strong></span>';
+            if (r.target_image) {
+              var ti = (r.target_image.indexOf('/') === 0 ? origin + r.target_image : r.target_image);
+              html += ' <img src="' + escapeHtml(ti) + '" alt="" onerror="this.onerror=null;this.src=\'' + ph.replace(/'/g, "\\'") + '\';" />';
+            }
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+        if (!answer && relations.length === 0) {
+          html = '<p style="color:#8b949e">未找到与「' + escapeHtml(data.concept || q) + '」相关的内容。</p>';
+        }
+        results.innerHTML = html;
+      })
+      .catch(function() {
+        results.innerHTML = '<p style="color:#f85149">查询失败</p>';
+      });
+  }
+
+  function escapeHtml(s) {
+    if (s == null) return '';
+    var div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  btn.addEventListener('click', doSearch);
+  input.addEventListener('keydown', function(e) { if (e.key === 'Enter') doSearch(); });
+  document.querySelectorAll('.qa-suggest a[data-q]').forEach(function(a) {
+    a.addEventListener('click', function() {
+      var q = this.getAttribute('data-q');
+      if (q) { input.value = q; doSearch(); }
+    });
+  });
+})();
+</script>
+{% endblock %}

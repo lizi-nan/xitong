@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}用户管理 - 藏医多模态知识图谱{% endblock %}
+{% block content %}
+<h1 class="page-title">用户管理</h1>
+<div class="users-actions">
+  <button type="button" id="add-user-btn">添加用户</button>
+</div>
+<table class="users-table" id="users-table">
+  <thead>
+    <tr><th>用户名</th><th>操作</th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
+<div class="modal" id="modal">
+  <div class="modal-inner">
+    <h3 id="modal-title">添加用户</h3>
+    <label>用户名 <input type="text" id="modal-username" /></label>
+    <label>密码 <input type="password" id="modal-password" /></label>
+    <div class="btns">
+      <button type="button" class="primary" id="modal-submit">确定</button>
+      <button type="button" id="modal-cancel">取消</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+(function() {
+  var tbody = document.querySelector('#users-table tbody');
+  var modal = document.getElementById('modal');
+  var currentUserId = null;
+
+  function loadUsers() {
+    apiGet('{{ url_for("api_users_list") }}').then(function(list) {
+      tbody.innerHTML = '';
+      (list || []).forEach(function(u) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + (u.username || '') + '</td><td>' +
+          (u.id === '{{ current_user.id }}' ? '' : '<button class="btn-del" data-id="' + u.id + '">删除</button>') + '</td>';
+        var btn = tr.querySelector('.btn-del');
+        if (btn) btn.addEventListener('click', function() { deleteUser(btn.getAttribute('data-id')); });
+        tbody.appendChild(tr);
+      });
+    });
+  }
+
+  function deleteUser(id) {
+    if (!confirm('确定删除该用户？')) return;
+    apiDelete('/api/users/' + id).then(function(r) {
+      if (r.ok) loadUsers();
+      else alert(r.message || '删除失败');
+    });
+  }
+
+  document.getElementById('add-user-btn').addEventListener('click', function() {
+    currentUserId = null;
+    document.getElementById('modal-title').textContent = '添加用户';
+    document.getElementById('modal-username').value = '';
+    document.getElementById('modal-password').value = '';
+    modal.classList.add('show');
+  });
+
+  document.getElementById('modal-cancel').addEventListener('click', function() {
+    modal.classList.remove('show');
+  });
+
+  document.getElementById('modal-submit').addEventListener('click', function() {
+    var username = document.getElementById('modal-username').value.trim();
+    var password = document.getElementById('modal-password').value;
+    if (!username || !password) {
+      alert('请填写用户名和密码');
+      return;
+    }
+    apiPost('/api/users', { username: username, password: password })
+      .then(function(r) {
+        if (r.ok) {
+          modal.classList.remove('show');
+          loadUsers();
+        } else {
+          alert(r.message || '添加失败');
+        }
+      });
+  });
+
+  loadUsers();
+})();
+</script>
+{% endblock %}

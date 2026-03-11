@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}注册 - 藏医知识图谱{% endblock %}
+{% block content %}
+<div class="login-box">
+  <h1>用户注册</h1>
+  {% if error %}
+  <p class="error">{{ error }}</p>
+  {% endif %}
+  <form method="post" action="{{ url_for('register') }}">
+    <label>用户名 <input type="text" name="username" required autofocus></label>
+    <label>密码 <input type="password" name="password" required></label>
+    <label>确认密码 <input type="password" name="password2" required></label>
+    <button type="submit">注册</button>
+  </form>
+  <p class="hint">已有账号？<a href="{{ url_for('login') }}">去登录</a></p>
+</div>
+{% endblock %}
